@@ -9,6 +9,14 @@ using System.Reflection;
 
 namespace xInvoke
 {
+    public class abc
+    {
+        public void a()
+        {
+
+        }
+    }
+
     /// <summary>
     /// Allows an application to call methods on a service with the same contract
     /// </summary>
@@ -21,11 +29,27 @@ namespace xInvoke
         private IXDBroadcast _sender = null;
         private IXDListener _listener = null;
 
+        
         /// <summary>
-        /// Instantiates the instance
+        /// Instantiates the client without allowing for network calling
         /// </summary>
         /// <param name="ServiceName">The name of the service to call to</param>
         public xInvokeClient(string ServiceName)
+        {
+            _create(ServiceName, false);
+        }
+
+        /// <summary>
+        /// Instantiates the client with the option for network calling
+        /// </summary>
+        /// <param name="ServiceName">The name of the service to call to</param>
+        /// <param name="Network">Whether to call across the network as well</param>
+        public xInvokeClient(string ServiceName, bool Network)
+        {
+            _create(ServiceName, Network);
+        }
+
+        private void _create(string ServiceName, bool Network)
         {
             _contract = new xInvokeContract(typeof(T));
             if (String.IsNullOrEmpty(ServiceName))
@@ -36,7 +60,7 @@ namespace xInvoke
 
             _serviceName = ServiceName;
 
-            _sender = XDBroadcast.CreateBroadcast(XDTransportMode.IOStream);
+            _sender = XDBroadcast.CreateBroadcast(XDTransportMode.IOStream, Network);
             _listener = XDListener.CreateListener(XDTransportMode.IOStream);
 
             _listener.MessageReceived += new XDListener.XDMessageHandler(_listener_MessageReceived);

@@ -21,11 +21,27 @@ namespace xInvoke
         private IXDBroadcast _sender = null;
 
         /// <summary>
-        /// Instantiates the instance
+        /// Instantiates the service (Local machine only)
         /// </summary>
-        /// <param name="Instance">The instance of the contract that callers will invoke</param>
-        /// <param name="ServiceName">The name of the service (used for discovery)</param>
+        /// <param name="Instance">The instance of the contract to be invoked</param>
+        /// <param name="ServiceName">The name of the service</param>
         public xInvokeService(T Instance, string ServiceName)
+        {
+            _create(Instance, ServiceName, false);
+        }
+
+        /// <summary>
+        /// Instantiates the service (with the option to propagate to over the network - will only work if the client originally broadcast over the network)
+        /// </summary>
+        /// <param name="Instance">The instance of the contract to be invoked</param>
+        /// <param name="ServiceName">The name of the service</param>
+        /// <param name="Network">Whether to allow the service to be called over the network</param>
+        public xInvokeService(T Instance, string ServiceName, bool Network)
+        {
+            _create(Instance, ServiceName, Network);
+        }
+
+        private void _create(T Instance, string ServiceName, bool Network)
         {
             if (Instance == null)
             {
@@ -46,9 +62,11 @@ namespace xInvoke
             _serviceName = ServiceName;
 
             _listen = XDListener.CreateListener(XDTransportMode.IOStream);
-            _sender = XDBroadcast.CreateBroadcast(XDTransportMode.IOStream);
+            _sender = XDBroadcast.CreateBroadcast(XDTransportMode.IOStream, Network);
             _listen.MessageReceived += new XDListener.XDMessageHandler(_listen_MessageReceived);
         }
+
+        
 
         ~xInvokeService()
         {
